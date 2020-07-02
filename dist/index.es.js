@@ -4201,6 +4201,12 @@ function ChannelList(props) {
       }
     };
   }, [sdkIntialized]);
+  React.useEffect(function () {
+    channelListDispatcher({
+      type: SET_CURRENT_CHANNEL,
+      payload: props.channelUrl
+    });
+  }, [props.channelUrl]);
   var allChannels = channelListStore.allChannels;
   useEffect(function () {
     if (!sdk || !sdk.GroupChannel) {
@@ -4393,7 +4399,8 @@ ChannelList.propTypes = {
   }),
   onBeforeCreateChannel: PropTypes.func,
   renderChannelPreview: PropTypes.element,
-  onChannelSelect: PropTypes.func
+  onChannelSelect: PropTypes.func,
+  channelUrl: PropTypes.string
 };
 ChannelList.defaultProps = {
   onBeforeCreateChannel: null,
