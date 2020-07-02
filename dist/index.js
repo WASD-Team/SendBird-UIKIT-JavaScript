@@ -927,11 +927,6 @@ function reducer$2(state, action) {
         var unreadMessageCount = action.payload.unreadMessageCount;
         var _channel = action.payload;
 
-        if (!_channel.lastMessage) {
-          return state;
-        } // if its only an unread message count change, dont push to top
-
-
         if (unreadMessageCount === 0) {
           var _currentChannel2 = allChannels.find(function (_ref3) {
             var url = _ref3.url;
@@ -3944,12 +3939,10 @@ var createEventHandler = function createEventHandler(_ref) {
   ChannelHandler.onUserJoined = function (channel) {
     logger.info('ChannelList: onUserJoined', channel);
 
-    if (channel.lastMessage) {
-      channelListDispatcher({
-        type: ON_USER_JOINED,
-        payload: channel
-      });
-    }
+    channelListDispatcher({
+      type: ON_USER_JOINED,
+      payload: channel
+    });
   };
 
   ChannelHandler.onUserLeft = function (channel, leftUser) {
