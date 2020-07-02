@@ -3453,10 +3453,10 @@ MenuItems.propTypes = {
   children: PropTypes.oneOfType([PropTypes.element, PropTypes.arrayOf(PropTypes.element)]).isRequired,
   // https://stackoverflow.com/a/51127130
   parentRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({
-    current: PropTypes.instanceOf(Element)
+    current: PropTypes.any
   })]).isRequired,
   parentContainRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({
-    current: PropTypes.instanceOf(Element)
+    current: PropTypes.any
   })]).isRequired,
   openLeft: PropTypes.bool
 };
@@ -3662,10 +3662,10 @@ EmojiListItems.propTypes = {
   closeDropdown: PropTypes.func.isRequired,
   children: PropTypes.oneOfType([PropTypes.element, PropTypes.arrayOf(PropTypes.element)]).isRequired,
   parentRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({
-    current: PropTypes.instanceOf(Element)
+    current: PropTypes.any
   })]).isRequired,
   parentContainRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({
-    current: PropTypes.instanceOf(Element)
+    current: PropTypes.any
   })]).isRequired,
   spaceFromTrigger: PropTypes.shape({
     x: PropTypes.number,
