@@ -8380,6 +8380,12 @@ var ConversationPanel = function ConversationPanel(props) {
       _useSendFileMessageCa2 = _slicedToArray(_useSendFileMessageCa, 1),
       onSendFileMessage = _useSendFileMessageCa2[0];
 
+  React.useEffect(function () {
+    if (props.focusOnMount && messageInputRef.current && initialized && !loading) {
+      messageInputRef.current.focus()
+    }
+  }, [initialized, loading]);
+
   if (sdkError) {
     return React__default.createElement("div", {
       className: "sendbird-conversation"
@@ -8540,7 +8546,8 @@ ConversationPanel.propTypes = {
   // onBeforeSendFileMessage(File)
   onBeforeUpdateUserMessage: PropTypes.func,
   renderChatItem: PropTypes.element,
-  onChatHeaderActionClick: PropTypes.func
+  onChatHeaderActionClick: PropTypes.func,
+  focusOnMount: PropTypes.bool
 };
 ConversationPanel.defaultProps = {
   channelUrl: null,
