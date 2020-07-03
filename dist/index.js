@@ -8054,7 +8054,7 @@ var prettyDate = function prettyDate(date) {
 };
 var getChannelAvatarSource$1 = function getChannelAvatarSource(channel, currentUserId) {
   if (channel && channel.coverUrl) {
-    if (channel.coverUrl !== 'https://static.sendbird.com/sample/cover/cover_') {
+    if (channel.coverUrl.indexOf('https://static.sendbird.com/sample/cover/cover_') === -1) {
       return channel.coverUrl;
     }
   }
@@ -8087,7 +8087,7 @@ var getChannelTitle$1 = function getChannelTitle() {
     return LabelStringSet.NO_TITLE;
   }
 
-  if (channel.name && channel.name !== 'Group Channel') {
+  if (channel.members.length > 2 && channel.name && channel.name !== 'Group Channel') {
     return channel.name;
   }
 
