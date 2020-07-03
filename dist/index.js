@@ -1519,7 +1519,7 @@ var getIsSentFromStatus = function getIsSentFromStatus(status) {
 
 var getChannelAvatarSource = function getChannelAvatarSource(channel, currentUserId) {
   if (channel && channel.coverUrl) {
-    if (channel.coverUrl !== 'https://static.sendbird.com/sample/cover/cover_') {
+    if (channel.coverUrl.indexOf('https://static.sendbird.com/sample/cover/cover_') === -1) {
       return channel.coverUrl;
     }
   }
