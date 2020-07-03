@@ -1539,7 +1539,7 @@ var getChannelTitle = function getChannelTitle() {
     return LabelStringSet.NO_TITLE;
   }
 
-  if (channel.name && channel.name !== 'Group Channel') {
+  if (channel.members.length > 2 && channel.name && channel.name !== 'Group Channel') {
     return channel.name;
   }
 
