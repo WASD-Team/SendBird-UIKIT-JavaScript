@@ -828,8 +828,7 @@ function reducer$2(state, action) {
       return _objectSpread2({}, state, {
         initialized: true,
         loading: false,
-        allChannels: action.payload,
-        currentChannel: action.payload && action.payload.length && action.payload.length > 0 ? action.payload[0].url : null
+        allChannels: action.payload
       });
 
     case FETCH_CHANNELS_SUCCESS:
@@ -4059,8 +4058,11 @@ function setupChannelList(_ref3) {
       } // select first channel
 
 
-      logger.info('ChannelList - highlight channel', channelList[0]);
-      onChannelSelect(channelList[0]);
+      if (_ref3.autoselectChannel) {
+        logger.info('ChannelList - highlight channel', channelList[0]);
+        onChannelSelect(channelList[0]);
+      }
+
       channelListDispatcher({
         type: INIT_CHANNELS_SUCCESS,
         payload: channelList
@@ -4169,7 +4171,8 @@ function ChannelList(props) {
         setChannelSource: setChannelSource,
         onChannelSelect: onChannelSelect,
         userFilledChannelListQuery: userFilledChannelListQuery,
-        logger: logger
+        logger: logger,
+        autoselectChannel: props.autoselectChannel
       });
     } else {
       logger.info('ChannelList: Removing channelHandlers'); // remove previous channelHandlers
