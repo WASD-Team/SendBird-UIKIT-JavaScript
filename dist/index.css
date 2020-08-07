@@ -108,6 +108,25 @@
   display: none; }
 
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap");
+.sendbird-avatar-container {
+  display: inline-block;
+  position: relative; }
+  .sendbird-avatar-container--online:after {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-radius: 50%; }
+    .sendbird-theme--light .sendbird-avatar-container--online:after {
+      background: #6FD6BE;
+      border: 2px solid transparent; }
+    .sendbird-theme--dark .sendbird-avatar-container--online:after {
+      background: #6FD6BE;
+      border: 2px solid transparent; }
+
 .sendbird-avatar {
   display: inline-block;
   overflow: hidden;

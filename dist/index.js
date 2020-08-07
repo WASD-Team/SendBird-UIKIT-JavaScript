@@ -924,7 +924,7 @@ function reducer$2(state, action) {
         var _state$allChannels = state.allChannels,
             allChannels = _state$allChannels === void 0 ? [] : _state$allChannels;
         var unreadMessageCount = action.payload.unreadMessageCount;
-        var _channel = action.payload;
+        var _channel = action.payload; // if its only an unread message count change, dont push to top
 
         if (unreadMessageCount === 0) {
           var _currentChannel2 = allChannels.find(function (_ref3) {
@@ -1260,9 +1260,16 @@ function Avatar(_ref3) {
       height = _ref3.height,
       width = _ref3.width,
       alt = _ref3.alt,
-      className = _ref3.className;
+      className = _ref3.className,
+      isOnline = _ref3.isOnline;
   var injectingClassName = Array.isArray(className) ? className : [className];
   return React__default.createElement("div", {
+    className: "sendbird-avatar-container ".concat(isOnline ? 'sendbird-avatar-container--online' : ''),
+    style: {
+      height: height,
+      width: width
+    }
+  }, React__default.createElement("div", {
     className: [].concat(_toConsumableArray(injectingClassName), ['sendbird-avatar']).join(' '),
     style: {
       height: height,
@@ -1273,21 +1280,23 @@ function Avatar(_ref3) {
     height: height,
     width: width,
     alt: alt
-  }));
+  })));
 }
 Avatar.propTypes = {
   src: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
   height: PropTypes.string,
   width: PropTypes.string,
   alt: PropTypes.string,
-  className: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
+  className: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+  isOnline: PropTypes.bool
 };
 Avatar.defaultProps = {
   height: '56px',
   width: '56px',
   alt: '',
   src: '',
-  className: ''
+  className: '',
+  isOnline: false
 };
 
 var Typography = {
@@ -1600,6 +1609,91 @@ var getChannelUnreadMessageCount = function getChannelUnreadMessageCount(channel
   return channel && channel.unreadMessageCount ? channel.unreadMessageCount : 0;
 };
 
+var areSetsEqual = function areSetsEqual(a, b) {
+  return a.size === b.size && _toConsumableArray(a).every(function (it) {
+    return b.has(it);
+  });
+};
+
+var SubscriptionContext = React__default.createContext({
+  subscribe: function subscribe() {},
+  unsubscribe: function unsubscribe() {}
+});
+var StorageContext = React__default.createContext({});
+function ExternalUserProfileProvider( // eslint-disable-next-line react/prop-types
+_ref) {
+  var onProfileListRequested = _ref.onProfileListRequested,
+      profileDataMap = _ref.profileDataMap,
+      children = _ref.children;
+
+  var _useState = React.useState([]),
+      _useState2 = _slicedToArray(_useState, 2),
+      subscriptions = _useState2[0],
+      setSubscriptions = _useState2[1];
+
+  var requestListRef = React.useRef(new Set());
+  var subscriptionApi = React.useMemo(function () {
+    return {
+      subscribe: function subscribe(newProfileList) {
+        setSubscriptions(function (prevSubscriptions) {
+          return prevSubscriptions.filter(function (it) {
+            return it !== newProfileList;
+          }).concat([newProfileList]);
+        });
+      },
+      unsubscribe: function unsubscribe(existingProfileList) {
+        setSubscriptions(function (prevSubscriptions) {
+          return prevSubscriptions.filter(function (it) {
+            return it !== existingProfileList;
+          });
+        });
+      }
+    };
+  }, []);
+  React.useEffect(function () {
+    var flatList = subscriptions.reduce(function (acc, val) {
+      return acc.concat(val);
+    }, []);
+    var newRequestedList = new Set(flatList);
+
+    if (!areSetsEqual(newRequestedList, requestListRef.current)) {
+      requestListRef.current = newRequestedList;
+      onProfileListRequested(Array.from(newRequestedList));
+    }
+  }, [subscriptions, onProfileListRequested]);
+  return React__default.createElement(SubscriptionContext.Provider, {
+    value: subscriptionApi
+  }, React__default.createElement(StorageContext.Provider, {
+    value: profileDataMap
+  }, children));
+}
+ExternalUserProfileProvider.SubscriptionContext = SubscriptionContext;
+ExternalUserProfileProvider.StorageContext = StorageContext;
+function useExternalUserProfileSubscription(profileList) {
+  var subscriptionApi = React.useContext(SubscriptionContext);
+  return React.useEffect(function () {
+    subscriptionApi.subscribe(profileList);
+    return function () {
+      return subscriptionApi.unsubscribe(profileList);
+    };
+  }, [subscriptionApi, profileList]);
+}
+function useExternalUserProfiles(userIds) {
+  var storage = React.useContext(StorageContext);
+
+  if (!userIds) {
+    return {};
+  }
+
+  if (Array.isArray(userIds)) {
+    return userIds.map(function (id) {
+      return storage[id] || {};
+    });
+  }
+
+  return storage[userIds];
+}
+
 function ChannelPreview(_ref) {
   var channel = _ref.channel,
       isActive = _ref.isActive,
@@ -1608,14 +1702,23 @@ function ChannelPreview(_ref) {
       tabIndex = _ref.tabIndex,
       currentUser = _ref.currentUser;
   var userId = currentUser.userId;
+  var channelMemberIds = React.useMemo(function () {
+    return channel && channel.members && channel.members.length === 2 ? channel.members.map(function (member) {
+      return member.userId;
+    }).filter(function (memberId) {
+      return memberId !== userId;
+    }) : [];
+  }, [channel.members]);
+  var externalProfiles = useExternalUserProfiles(channelMemberIds);
   var memoizedAvatar = React.useMemo(function () {
     return React__default.createElement(Avatar, {
       className: "sendbird-chat-header__avatar",
       src: getChannelAvatarSource(channel, userId),
       width: "32px",
-      height: "32px"
+      height: "32px",
+      isOnline: externalProfiles.length === 1 && externalProfiles[0].online
     });
-  }, [channel]);
+  }, [channel, externalProfiles]);
   return React__default.createElement("div", {
     role: "link",
     tabIndex: tabIndex,
@@ -3938,10 +4041,12 @@ var createEventHandler = function createEventHandler(_ref) {
   ChannelHandler.onUserJoined = function (channel) {
     logger.info('ChannelList: onUserJoined', channel);
 
-    channelListDispatcher({
-      type: ON_USER_JOINED,
-      payload: channel
-    });
+    if (channel.lastMessage) {
+      channelListDispatcher({
+        type: ON_USER_JOINED,
+        payload: channel
+      });
+    }
   };
 
   ChannelHandler.onUserLeft = function (channel, leftUser) {
@@ -4022,7 +4127,8 @@ function setupChannelList(_ref3) {
       setChannelSource = _ref3.setChannelSource,
       onChannelSelect = _ref3.onChannelSelect,
       userFilledChannelListQuery = _ref3.userFilledChannelListQuery,
-      logger = _ref3.logger;
+      logger = _ref3.logger,
+      autoselectChannel = _ref3.autoselectChannel;
   createEventHandler({
     sdk: sdk,
     channelListDispatcher: channelListDispatcher,
@@ -4062,10 +4168,10 @@ function setupChannelList(_ref3) {
           type: INIT_CHANNELS_FAILURE
         });
         return;
-      } // select first channel
+      }
 
-
-      if (_ref3.autoselectChannel) {
+      if (autoselectChannel) {
+        // select first channel
         logger.info('ChannelList - highlight channel', channelList[0]);
         onChannelSelect(channelList[0]);
       }
@@ -4129,6 +4235,8 @@ function ChannelList(props) {
       userListQuery = _props$config.userListQuery,
       logger = _props$config.logger,
       pubSub = _props$config.pubSub,
+      activeChannel = props.activeChannel,
+      autoselectChannel = props.autoselectChannel,
       _props$queries = props.queries,
       queries = _props$queries === void 0 ? {} : _props$queries,
       renderChannelPreview = props.renderChannelPreview,
@@ -4179,7 +4287,7 @@ function ChannelList(props) {
         onChannelSelect: onChannelSelect,
         userFilledChannelListQuery: userFilledChannelListQuery,
         logger: logger,
-        autoselectChannel: props.autoselectChannel
+        autoselectChannel: autoselectChannel
       });
     } else {
       logger.info('ChannelList: Removing channelHandlers'); // remove previous channelHandlers
@@ -4204,12 +4312,12 @@ function ChannelList(props) {
       }
     };
   }, [sdkIntialized]);
-  React.useEffect(function () {
+  React__default.useEffect(function () {
     channelListDispatcher({
       type: SET_CURRENT_CHANNEL,
-      payload: props.channelUrl
+      payload: activeChannel
     });
-  }, [props.channelUrl]);
+  }, [activeChannel]);
   var allChannels = channelListStore.allChannels;
   React.useEffect(function () {
     if (!sdk || !sdk.GroupChannel) {
@@ -4224,6 +4332,18 @@ function ChannelList(props) {
       }
     });
   }, [currentChannel]);
+  var allChannelsMemberIds = React.useMemo(function () {
+    if (!allChannels) {
+      return [];
+    }
+
+    return allChannels.reduce(function (acc, val) {
+      return acc.concat(val.members.map(function (it) {
+        return it.userId;
+      }));
+    }, []);
+  }, [allChannels]);
+  useExternalUserProfileSubscription(allChannelsMemberIds);
   return React__default.createElement("div", {
     className: "sendbird-channel-list"
   }, React__default.createElement("div", {
@@ -4351,6 +4471,8 @@ function ChannelList(props) {
 }
 
 ChannelList.propTypes = {
+  activeChannel: PropTypes.string,
+  autoselectChannel: PropTypes.bool,
   stores: PropTypes.shape({
     sdkStore: PropTypes.shape({
       initialized: PropTypes.bool
@@ -4402,10 +4524,11 @@ ChannelList.propTypes = {
   }),
   onBeforeCreateChannel: PropTypes.func,
   renderChannelPreview: PropTypes.element,
-  onChannelSelect: PropTypes.func,
-  channelUrl: PropTypes.string
+  onChannelSelect: PropTypes.func
 };
 ChannelList.defaultProps = {
+  activeChannel: null,
+  autoselectChannel: true,
   onBeforeCreateChannel: null,
   renderChannelPreview: null,
   queries: {},
@@ -8142,14 +8265,23 @@ function ChatHeader(props) {
       isMuted = props.isMuted,
       onActionClick = props.onActionClick;
   var userId = currentUser.userId;
+  var channelMemberIds = React.useMemo(function () {
+    return currentGroupChannel && currentGroupChannel.members && currentGroupChannel.members.length === 2 ? currentGroupChannel.members.map(function (member) {
+      return member.userId;
+    }).filter(function (memberId) {
+      return memberId !== userId;
+    }) : [];
+  }, [currentGroupChannel.members]);
+  var externalProfiles = useExternalUserProfiles(channelMemberIds);
   var memoizedAvatar = React.useMemo(function () {
     return React__default.createElement(Avatar, {
       className: "sendbird-chat-header__avatar",
       src: getChannelAvatarSource$1(currentGroupChannel, userId),
       width: "32px",
-      height: "32px"
+      height: "32px",
+      isOnline: externalProfiles.length === 1 && externalProfiles[0].online
     });
-  }, [currentGroupChannel]);
+  }, [currentGroupChannel, externalProfiles]);
   return React__default.createElement("div", {
     className: "sendbird-chat-header"
   }, React__default.createElement("div", {
@@ -8164,7 +8296,7 @@ function ChatHeader(props) {
     className: "sendbird-chat-header__subtitle",
     type: LabelTypography.BODY_1,
     color: LabelColors.ONBACKGROUND_2
-  }, subTitle || React__default.createElement(AutoRefresh, {
+  }, subTitle || externalProfiles.length === 1 && externalProfiles[0].online && 'Online' || externalProfiles.length === 1 && externalProfiles[0].lastOnline && prettyDate(externalProfiles[0].lastOnline) || React__default.createElement(AutoRefresh, {
     repeatFunc: function repeatFunc() {
       return getOthersLastSeenAt(currentGroupChannel);
     }
@@ -8188,7 +8320,9 @@ function ChatHeader(props) {
   }))));
 }
 ChatHeader.propTypes = {
-  currentGroupChannel: PropTypes.shape({}),
+  currentGroupChannel: PropTypes.shape({
+    members: PropTypes.array
+  }),
   currentUser: PropTypes.shape({
     userId: PropTypes.string
   }),
@@ -8212,6 +8346,7 @@ var noop$5 = function noop() {};
 
 var ConversationPanel = function ConversationPanel(props) {
   var channelUrl = props.channelUrl,
+      focusOnMount = props.focusOnMount,
       _props$stores = props.stores,
       sdkStore = _props$stores.sdkStore,
       userStore = _props$stores.userStore,
@@ -8384,10 +8519,16 @@ var ConversationPanel = function ConversationPanel(props) {
       onSendFileMessage = _useSendFileMessageCa2[0];
 
   React.useEffect(function () {
-    if (props.focusOnMount && messageInputRef.current && initialized && !loading) {
-      messageInputRef.current.focus()
+    if (focusOnMount && messageInputRef.current && initialized && !loading) {
+      messageInputRef.current.focus();
     }
   }, [initialized, loading]);
+  var channelMemberIds = React.useMemo(function () {
+    return currentGroupChannel.members.map(function (it) {
+      return it.userId;
+    });
+  }, [currentGroupChannel.members]);
+  useExternalUserProfileSubscription(channelMemberIds);
 
   if (sdkError) {
     return React__default.createElement("div", {
@@ -8495,6 +8636,7 @@ var ConversationPanel = function ConversationPanel(props) {
 };
 ConversationPanel.propTypes = {
   channelUrl: PropTypes.string,
+  focusOnMount: PropTypes.bool,
   stores: PropTypes.shape({
     sdkStore: PropTypes.shape({
       initialized: PropTypes.bool,
@@ -8549,11 +8691,11 @@ ConversationPanel.propTypes = {
   // onBeforeSendFileMessage(File)
   onBeforeUpdateUserMessage: PropTypes.func,
   renderChatItem: PropTypes.element,
-  onChatHeaderActionClick: PropTypes.func,
-  focusOnMount: PropTypes.bool
+  onChatHeaderActionClick: PropTypes.func
 };
 ConversationPanel.defaultProps = {
   channelUrl: null,
+  focusOnMount: false,
   queries: {},
   onBeforeSendUserMessage: null,
   onBeforeSendFileMessage: null,
@@ -9588,6 +9730,7 @@ exports.App = App;
 exports.Channel = Conversation;
 exports.ChannelList = ChannelList$1;
 exports.ChannelSettings = ChannelSettings$1;
+exports.ExternalUserProfileProvider = ExternalUserProfileProvider;
 exports.SendBirdProvider = Sendbird;
 exports.getAllEmojisFromEmojiContainer = getAllEmojisFromEmojiContainer$1;
 exports.getEmojiCategoriesFromEmojiContainer = getEmojiCategoriesFromEmojiContainer$1;
