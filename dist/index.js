@@ -8197,13 +8197,14 @@ var getOthersLastSeenAt = function getOthersLastSeenAt(channel) {
     return '';
   }
 
-  var lastSeenAt = _toConsumableArray(Object.values(channel.getReadStatus()))[0].last_seen_at;
+  var _ref2 = _toConsumableArray(Object.values(channel.getReadStatus())),
+      readStatus = _ref2[0];
 
-  if (lastSeenAt === 0) {
+  if (!readStatus || !readStatus.last_seen_at) {
     return '';
   }
 
-  return prettyDate(lastSeenAt);
+  return prettyDate(readStatus.last_seen_at);
 };
 var getChannelTitle$1 = function getChannelTitle() {
   var channel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -8221,11 +8222,11 @@ var getChannelTitle$1 = function getChannelTitle() {
     return LabelStringSet.NO_MEMBERS;
   }
 
-  return channel.members.filter(function (_ref2) {
-    var userId = _ref2.userId;
+  return channel.members.filter(function (_ref3) {
+    var userId = _ref3.userId;
     return userId !== currentUserId;
-  }).map(function (_ref3) {
-    var nickname = _ref3.nickname;
+  }).map(function (_ref4) {
+    var nickname = _ref4.nickname;
     return nickname || LabelStringSet.NO_NAME;
   }).join(', ');
 };
