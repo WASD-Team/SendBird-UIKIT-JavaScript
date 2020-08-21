@@ -934,7 +934,7 @@ function reducer$2(state, action) {
 
           var currentUnReadCount = _currentChannel2 && _currentChannel2.unreadMessageCount;
 
-          if (currentUnReadCount === 0) {
+          if (currentUnReadCount !== unreadMessageCount) {
             return _objectSpread2({}, state, {
               allChannels: allChannels.map(function (c) {
                 if (c.url === _channel.url) {
@@ -4287,7 +4287,7 @@ function ChannelList(props) {
         onChannelSelect: onChannelSelect,
         userFilledChannelListQuery: userFilledChannelListQuery,
         logger: logger,
-        autoselectChannel: autoselectChannel
+        autoselectChannel: autoselectChannel && !activeChannel
       });
     } else {
       logger.info('ChannelList: Removing channelHandlers'); // remove previous channelHandlers
