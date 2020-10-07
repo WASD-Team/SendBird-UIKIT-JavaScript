@@ -8468,6 +8468,36 @@ var ConversationPanel = function ConversationPanel(props) {
     messagesDispatcher: messagesDispatcher,
     userFilledMessageListQuery: userFilledMessageListQuery
   });
+  useEffect(function () {
+    var scrollElement = scrollRef.current;
+
+    if (!scrollElement) {
+      return;
+    }
+
+    var lastMessageElement = scrollElement.querySelector('.sendbird-msg--scroll-ref:last-of-type');
+
+    if (!lastMessageElement) {
+      return;
+    }
+
+    var prevMessageElement = lastMessageElement.previousElementSibling;
+
+    if (!prevMessageElement) {
+      return;
+    }
+
+    var scrollBottom = scrollElement.scrollTop + scrollElement.clientHeight;
+    var prevElementTop = prevMessageElement.offsetTop - prevMessageElement.clientHeight;
+
+    if (scrollBottom > prevElementTop) {
+      scrollIntoLast('.sendbird-msg--scroll-ref');
+      currentGroupChannel.markAsRead();
+      messagesDispatcher({
+        type: MARK_AS_READ
+      });
+    }
+  }, [allMessages]);
   var deleteMessage = useDeleteMessageCallback({
     currentGroupChannel: currentGroupChannel,
     messagesDispatcher: messagesDispatcher
