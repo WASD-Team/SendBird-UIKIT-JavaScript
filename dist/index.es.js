@@ -834,12 +834,15 @@ function reducer$2(state, action) {
     case FETCH_CHANNELS_SUCCESS:
       {
         var currentChannels = state.allChannels.map(function (c) {
-          return c.url;
+          var updatedChannel = action.payload.find(function (existing) {
+            return existing.url === c.url;
+          });
+          return updatedChannel || c;
         });
         var filteredChannels = action.payload.filter(function (_ref) {
           var url = _ref.url;
           return !currentChannels.find(function (c) {
-            return c === url;
+            return c.url === url;
           });
         });
         return _objectSpread2({}, state, {
@@ -4213,6 +4216,58 @@ var pubSubHandler = function pubSubHandler(pubSub, channelListDispatcher) {
   }));
   return subScriber;
 };
+function refreshChannelList(_ref4) {
+  var sdk = _ref4.sdk,
+      allChannels = _ref4.allChannels,
+      channelListDispatcher = _ref4.channelListDispatcher;
+  var refreshList = allChannels.map(function (channel) {
+    return channel.url;
+  });
+
+  function fetchBatch() {
+    if (!refreshList.length) {
+      return Promise.resolve();
+    }
+
+    var currentBatch = refreshList.splice(0, 10);
+    var listQuery = sdk.GroupChannel.createMyGroupChannelListQuery();
+    listQuery.channelUrlsFilter = currentBatch;
+    return listQuery.next().then(function (channels) {
+      channelListDispatcher({
+        type: FETCH_CHANNELS_SUCCESS,
+        payload: channels
+      });
+      return new Promise(function (resolve) {
+        return setTimeout(resolve, 500);
+      }).then(fetchBatch);
+    });
+  }
+
+  return fetchBatch();
+}
+
+function useHandleReconnect(_ref, _ref2) {
+  var isOnline = _ref.isOnline;
+  var sdk = _ref2.sdk,
+      allChannels = _ref2.allChannels,
+      channelListDispatcher = _ref2.channelListDispatcher;
+  useEffect(function () {
+    if (!isOnline) {
+      return function () {};
+    }
+
+    var timer = setTimeout(function () {
+      refreshChannelList({
+        sdk: sdk,
+        allChannels: allChannels,
+        channelListDispatcher: channelListDispatcher
+      });
+    }, 2000);
+    return function () {
+      return clearTimeout(timer);
+    };
+  }, [isOnline]);
+}
 
 var noop = function noop() {};
 
@@ -4325,6 +4380,13 @@ function ChannelList(props) {
       }
     });
   }, [currentChannel]);
+  useHandleReconnect({
+    isOnline: isOnline
+  }, {
+    sdk: sdk,
+    allChannels: allChannels,
+    channelListDispatcher: channelListDispatcher
+  });
   var allChannelsMemberIds = useMemo(function () {
     if (!allChannels) {
       return [];
@@ -4548,6 +4610,7 @@ var MARK_AS_READ = 'MARK_AS_READ';
 var ON_REACTION_UPDATED = 'ON_REACTION_UPDATED';
 var SET_EMOJI_CONTAINER = 'SET_EMOJI_CONTAINER';
 var SET_READ_STATUS = 'SET_READ_STATUS';
+var MERGE_MESSAGES = 'MERGE_MESSAGES';
 
 var pubSubHandleRemover$1 = function pubSubHandleRemover(subscriber) {
   subscriber.forEach(function (s) {
@@ -4776,6 +4839,23 @@ function reducer$3(state, action) {
           hasMore: action.payload.hasMore,
           lastMessageTimeStamp: action.payload.lastMessageTimeStamp,
           allMessages: [].concat(_toConsumableArray(recivedMessages), _toConsumableArray(filteredAllMessages))
+        });
+      }
+
+    case MERGE_MESSAGES:
+      {
+        var missingMessages = action.payload.filter(function (newMessage) {
+          return !state.allMessages.find(function (oldMessage) {
+            return compareIds(newMessage.messageId, oldMessage.messageId);
+          });
+        });
+        var mergedMessages = [].concat(_toConsumableArray(state.allMessages), _toConsumableArray(missingMessages)).sort(function (messageA, messageB) {
+          return messageA.createdAt - messageB.createdAt;
+        });
+        return _objectSpread2({}, state, {
+          allMessages: mergedMessages,
+          lastMessageTimeStamp: mergedMessages.length ? mergedMessages[0].createdAt : 0,
+          hasMore: !!mergedMessages.length
         });
       }
 
@@ -5129,7 +5209,7 @@ function useInitialMessagesFetch(_ref, _ref2) {
   }, [channelUrl]);
 }
 
-function useHandleReconnect(_ref, _ref2) {
+function useHandleReconnect$1(_ref, _ref2) {
   var isOnline = _ref.isOnline;
   var logger = _ref2.logger,
       sdk = _ref2.sdk,
@@ -5146,7 +5226,6 @@ function useHandleReconnect(_ref, _ref2) {
             appInfo = _sdk$appInfo === void 0 ? {} : _sdk$appInfo;
         var useReaction = appInfo.isUsingReaction || false;
         var messageListParams = new sdk.MessageListParams();
-        messageListParams.prevResultSize = 30;
         messageListParams.includeReplies = false;
         messageListParams.includeReactions = useReaction;
 
@@ -5160,24 +5239,15 @@ function useHandleReconnect(_ref, _ref2) {
           currentGroupChannel: currentGroupChannel,
           userFilledMessageListQuery: userFilledMessageListQuery
         });
-        messagesDispatcher({
-          type: GET_PREV_MESSAGES_START
-        });
         sdk.GroupChannel.getChannel(currentGroupChannel.url).then(function (groupChannel) {
-          var lastMessageTime = new Date().getTime();
-          groupChannel.getMessagesByTimestamp(lastMessageTime, messageListParams).then(function (messages) {
+          var lastMessageTime = currentGroupChannel && currentGroupChannel.lastMessage && currentGroupChannel.lastMessage.createdAt;
+          var fetchAtTimestamp = lastMessageTime || new Date().getTime();
+          messageListParams.nextResultSize = lastMessageTime ? 30 : 0;
+          messageListParams.prevResultSize = lastMessageTime ? 5 : 30;
+          groupChannel.getMessagesByTimestamp(fetchAtTimestamp, messageListParams).then(function (messages) {
             messagesDispatcher({
-              type: CLEAR_SENT_MESSAGES
-            });
-            var hasMore = messages && messages.length > 0;
-            var lastMessageTimeStamp = hasMore ? messages[0].createdAt : null;
-            messagesDispatcher({
-              type: GET_PREV_MESSAGES_SUCESS,
-              payload: {
-                messages: messages,
-                hasMore: hasMore,
-                lastMessageTimeStamp: lastMessageTimeStamp
-              }
+              type: MERGE_MESSAGES,
+              payload: messages
             });
             setTimeout(function () {
               return scrollIntoLast('.sendbird-msg--scroll-ref');
@@ -5190,7 +5260,7 @@ function useHandleReconnect(_ref, _ref2) {
         });
       }
     };
-  }, [isOnline]);
+  }, [isOnline, currentGroupChannel]);
 }
 
 function useScrollCallback(_ref, _ref2) {
@@ -8459,14 +8529,15 @@ var ConversationPanel = function ConversationPanel(props) {
     logger: logger
   }); // handling connection breaks
 
-  useHandleReconnect({
+  useHandleReconnect$1({
     isOnline: isOnline
   }, {
     logger: logger,
     sdk: sdk,
     currentGroupChannel: currentGroupChannel,
     messagesDispatcher: messagesDispatcher,
-    userFilledMessageListQuery: userFilledMessageListQuery
+    userFilledMessageListQuery: userFilledMessageListQuery,
+    lastMessageTimeStamp: lastMessageTimeStamp
   });
   useEffect(function () {
     var scrollElement = scrollRef.current;
