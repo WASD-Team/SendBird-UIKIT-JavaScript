@@ -8030,16 +8030,26 @@ function (_Component) {
         var hasSeperator = !(prevCreatedAt && Moment(currentCreatedAt).isSame(Moment(prevCreatedAt), 'day'));
 
         if (renderChatItem) {
-          return React.createElement("div", {
-            key: m.messageId || m.reqId,
-            className: "sendbird-msg--scroll-ref"
-          }, renderChatItem({
+          var renderResult = renderChatItem({
+            userId: userId,
             message: m,
+            membersMap: membersMap,
             onDeleteMessage: deleteMessage,
             onUpdateMessage: updateMessage,
             onResendMessage: resendMessage,
             emojiContainer: emojiContainer
-          }));
+          });
+
+          if (!renderResult) {
+            return null;
+          }
+
+          if (renderResult !== true) {
+            return React.createElement("div", {
+              key: m.messageId || m.reqId,
+              className: "sendbird-msg--scroll-ref"
+            }, renderResult);
+          }
         }
 
         return React.createElement(MessageHoc // show status for pending/failed messages
