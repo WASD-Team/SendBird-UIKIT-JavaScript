@@ -544,11 +544,12 @@ var LoggerFactory = function LoggerFactory(lvl, customInterface) {
   var lvlArray = Array.isArray(lvl) ? lvl : [lvl];
 
   var applyLog = function applyLog(lgLvl) {
-    return function (title, description) {
+    return function (title, description, meta) {
       return logInterface({
         level: lgLvl,
         title: title,
-        description: description
+        description: description,
+        meta: meta
       });
     };
   };
@@ -656,9 +657,10 @@ function Sendbird(props) {
       _props$config = props.config,
       config = _props$config === void 0 ? {} : _props$config;
   var _config$logLevel = config.logLevel,
-      logLevel = _config$logLevel === void 0 ? '' : _config$logLevel;
+      logLevel = _config$logLevel === void 0 ? '' : _config$logLevel,
+      onLog = config.onLog;
 
-  var _useState = React.useState(LoggerFactory(logLevel)),
+  var _useState = React.useState(LoggerFactory(logLevel, onLog)),
       _useState2 = _slicedToArray(_useState, 2),
       logger = _useState2[0],
       setLogger = _useState2[1];
@@ -700,8 +702,8 @@ function Sendbird(props) {
   }, [userId, appId, accessToken]); // to create a pubsub to communicate between parent and child
 
   React.useEffect(function () {
-    setLogger(LoggerFactory(logLevel));
-  }, [logLevel]);
+    setLogger(LoggerFactory(logLevel, onLog));
+  }, [logLevel, onLog]);
   useAppendDomNode(['sendbird-modal-root', 'sendbird-dropdown-portal', 'sendbird-emoji-list-portal'], 'body'); // add-remove theme from body
 
   React.useEffect(function () {
@@ -5538,8 +5540,9 @@ function useSendMessageCallback(_ref, _ref2) {
 
 
       if (error) {
-        logger.warning('Channel: Sending message failed!', {
-          message: message
+        logger.error('Channel: Sending message failed!', {
+          message: message,
+          error: error
         });
         messagesDispatcher({
           type: SEND_MESSAGEGE_FAILURE,
@@ -5599,7 +5602,10 @@ function useSendFileMessageCallback(_ref, _ref2) {
       if (error) {
         // sending params instead of pending message
         // to make sure that we can resend the message once it fails
-        logger.error('Channel: Sending file message failed!', message);
+        logger.error('Channel: Sending file message failed!', {
+          message: message,
+          error: error
+        });
         message.url = URL.createObjectURL(file);
         message.file = file;
         messagesDispatcher({
