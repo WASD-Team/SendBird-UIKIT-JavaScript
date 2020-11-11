@@ -4682,26 +4682,6 @@ var pubSubHandler$1 = function pubSubHandler(channelUrl, pubSub, dispatcher) {
   }));
   return subscriber;
 };
-var scrollIntoLast = function scrollIntoLast(selector) {
-  var intialTry = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-  var MAX_TRIES = 10;
-  var currentTry = intialTry;
-
-  if (currentTry > MAX_TRIES) {
-    return;
-  }
-
-  try {
-    var nodes = document.querySelectorAll(selector);
-    var last = nodes[nodes.length - 1];
-    last.scrollIntoView(false);
-    /** alignToTop: false */
-  } catch (error) {
-    setTimeout(function () {
-      scrollIntoLast(selector, currentTry + 1);
-    }, 500 * currentTry);
-  }
-};
 var getParsedStatus = function getParsedStatus(message, currentGroupChannel) {
   if (message.requestState === 'failed') {
     return MessageStatusType.FAILED;
@@ -5155,7 +5135,8 @@ function useInitialMessagesFetch(_ref, _ref2) {
   var sdk = _ref2.sdk,
       logger = _ref2.logger,
       userFilledMessageListQuery = _ref2.userFilledMessageListQuery,
-      messagesDispatcher = _ref2.messagesDispatcher;
+      messagesDispatcher = _ref2.messagesDispatcher,
+      scrollToBottom = _ref2.scrollToBottom;
   var channelUrl = currentGroupChannel && currentGroupChannel.url;
   useEffect(function () {
     logger.info('Channel useInitialMessagesFetch: Setup started', currentGroupChannel);
@@ -5204,7 +5185,7 @@ function useInitialMessagesFetch(_ref, _ref2) {
       }).finally(function () {
         currentGroupChannel.markAsRead();
         setTimeout(function () {
-          return scrollIntoLast('.sendbird-msg--scroll-ref');
+          return scrollToBottom();
         });
       });
     }
@@ -5217,7 +5198,8 @@ function useHandleReconnect$1(_ref, _ref2) {
       sdk = _ref2.sdk,
       currentGroupChannel = _ref2.currentGroupChannel,
       messagesDispatcher = _ref2.messagesDispatcher,
-      userFilledMessageListQuery = _ref2.userFilledMessageListQuery;
+      userFilledMessageListQuery = _ref2.userFilledMessageListQuery,
+      scrollToBottom = _ref2.scrollToBottom;
   useEffect(function () {
     var wasOffline = !isOnline;
     return function () {
@@ -5252,7 +5234,7 @@ function useHandleReconnect$1(_ref, _ref2) {
               payload: messages
             });
             setTimeout(function () {
-              return scrollIntoLast('.sendbird-msg--scroll-ref');
+              return scrollToBottom();
             });
           }).catch(function (error) {
             logger.error('Channel: Fetching messages failed', error);
@@ -5501,7 +5483,8 @@ function useSendMessageCallback(_ref, _ref2) {
       onBeforeSendUserMessage = _ref.onBeforeSendUserMessage;
   var sdk = _ref2.sdk,
       logger = _ref2.logger,
-      messagesDispatcher = _ref2.messagesDispatcher;
+      messagesDispatcher = _ref2.messagesDispatcher,
+      scrollToBottom = _ref2.scrollToBottom;
   var messageInputRef = useRef(null);
   var sendMessage = useCallback(function () {
     var text = messageInputRef.current.value;
@@ -5555,7 +5538,7 @@ function useSendMessageCallback(_ref, _ref2) {
       payload: pendingMsg
     });
     setTimeout(function () {
-      return scrollIntoLast('.sendbird-msg--scroll-ref');
+      return scrollToBottom();
     });
   }, [currentGroupChannel, onBeforeSendUserMessage]);
   return [messageInputRef, sendMessage];
@@ -5566,7 +5549,8 @@ function useSendFileMessageCallback(_ref, _ref2) {
       onBeforeSendFileMessage = _ref.onBeforeSendFileMessage;
   var sdk = _ref2.sdk,
       logger = _ref2.logger,
-      messagesDispatcher = _ref2.messagesDispatcher;
+      messagesDispatcher = _ref2.messagesDispatcher,
+      scrollToBottom = _ref2.scrollToBottom;
   var sendMessage = useCallback(function (file) {
     var createParamsDefault = function createParamsDefault(file_) {
       var params = new sdk.FileMessageParams();
@@ -5623,7 +5607,7 @@ function useSendFileMessageCallback(_ref, _ref2) {
       })
     });
     setTimeout(function () {
-      return scrollIntoLast('.sendbird-msg--scroll-ref');
+      return scrollToBottom();
     }, 1000);
   }, [currentGroupChannel, onBeforeSendFileMessage]);
   return [sendMessage];
@@ -7977,7 +7961,7 @@ function (_Component) {
 
           if (messages) {
             // https://github.com/scabbiaza/react-scroll-position-on-updating-dom
-            first.scrollIntoView();
+            scrollRef.current.scrollTop = first.offsetTop;
           }
         });
       }
@@ -8488,6 +8472,15 @@ var ConversationPanel = function ConversationPanel(props) {
     messagesDispatcher: messagesDispatcher,
     sdk: sdk
   });
+  var scrollToBottom = useCallback(function () {
+    var element = scrollRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollTop = element.scrollHeight;
+  }, [scrollRef]);
   var toggleReaction = useToggleReactionCallback({
     currentGroupChannel: currentGroupChannel
   }, {
@@ -8526,7 +8519,8 @@ var ConversationPanel = function ConversationPanel(props) {
     sdk: sdk,
     logger: logger,
     messagesDispatcher: messagesDispatcher,
-    userFilledMessageListQuery: userFilledMessageListQuery
+    userFilledMessageListQuery: userFilledMessageListQuery,
+    scrollToBottom: scrollToBottom
   }); // handles API calls from withSendbird
 
   useEffect(function () {
@@ -8553,7 +8547,8 @@ var ConversationPanel = function ConversationPanel(props) {
     currentGroupChannel: currentGroupChannel,
     messagesDispatcher: messagesDispatcher,
     userFilledMessageListQuery: userFilledMessageListQuery,
-    lastMessageTimeStamp: lastMessageTimeStamp
+    lastMessageTimeStamp: lastMessageTimeStamp,
+    scrollToBottom: scrollToBottom
   });
   useEffect(function () {
     var scrollElement = scrollRef.current;
@@ -8578,13 +8573,13 @@ var ConversationPanel = function ConversationPanel(props) {
     var prevElementTop = prevMessageElement.offsetTop - prevMessageElement.clientHeight;
 
     if (scrollBottom > prevElementTop) {
-      scrollIntoLast('.sendbird-msg--scroll-ref');
+      scrollToBottom();
       currentGroupChannel.markAsRead();
       messagesDispatcher({
         type: MARK_AS_READ
       });
     }
-  }, [allMessages]);
+  }, [allMessages, scrollToBottom]);
   var deleteMessage = useDeleteMessageCallback({
     currentGroupChannel: currentGroupChannel,
     messagesDispatcher: messagesDispatcher
@@ -8612,7 +8607,8 @@ var ConversationPanel = function ConversationPanel(props) {
   }, {
     sdk: sdk,
     logger: logger,
-    messagesDispatcher: messagesDispatcher
+    messagesDispatcher: messagesDispatcher,
+    scrollToBottom: scrollToBottom
   }),
       _useSendMessageCallba2 = _slicedToArray(_useSendMessageCallba, 2),
       messageInputRef = _useSendMessageCallba2[0],
@@ -8624,7 +8620,8 @@ var ConversationPanel = function ConversationPanel(props) {
   }, {
     sdk: sdk,
     logger: logger,
-    messagesDispatcher: messagesDispatcher
+    messagesDispatcher: messagesDispatcher,
+    scrollToBottom: scrollToBottom
   }),
       _useSendFileMessageCa2 = _slicedToArray(_useSendFileMessageCa, 1),
       onSendFileMessage = _useSendFileMessageCa2[0];
@@ -8689,7 +8686,7 @@ var ConversationPanel = function ConversationPanel(props) {
   }), unreadCount > 0 && React.createElement(Notification, {
     count: unreadCount,
     onClick: function onClick() {
-      scrollIntoLast('.sendbird-msg--scroll-ref'); // there is no scroll
+      scrollToBottom(); // there is no scroll
 
       if (scrollRef.current.scrollTop === 0) {
         currentGroupChannel.markAsRead();
