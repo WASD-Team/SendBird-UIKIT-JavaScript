@@ -1,5 +1,212 @@
 # Changelog
 
+## [1.3.0](Nov 9, 2020)
+
+- Features:
+  * String set customization
+  * Use date-fns instead of momentjs
+  * Add type definition files for typescript support
+  * Theme customization using CSS-Variables
+
+- Bugfixes:
+  * Yarn support
+  * Cosmetic fixes
+
+## [1.3.0-rc.4](Oct 27, 2020)
+
+- Bugfixes:
+  * Yarn support
+  * Cosmetic fixes
+
+## [1.3.0-rc.1 - 1.3.0-rc.3]
+
+- Bugfixes:
+  * Type defintion fixes
+
+## 1.3.0-rc.0(Oct 20, 2020)
+
+- Features:
+  * String set customization
+  * Use date-fns instead of momentjs
+  * Add type definition files for typescript support
+  * Theme customization using CSS-Variables
+
+## 1.2.8(Oct 19, 2020)
+
+- Features/Bugs:
+  * sortChannelList prop for ChannelListComponent
+  ```
+    sortChannelList={(channels: BaseChannel) => {
+      ...
+      return sortedChannels: BaseChannel
+    }}
+  ```
+- Bugfixes:
+  * CSS Flex: Rename all start to flex-start
+
+## 1.2.7(Sept 29, 2020)
+
+- Bugfixes:
+  * Fix ChannelList scroll by adding correct classname
+
+## 1.2.6(Sept 28, 2020)
+
+- Bugfixes:
+  * sendBirdSelectors.getSendFileMessage supports attaching
+    files that are uploaded to a remote server
+  * renderChatItem includes channel as a prop:
+    * The available props are:
+      {
+        message: BaseMessage,
+        onDeleteMessage: Fn,
+        onUpdateMessage: Fn,
+        channel: GroupChannel
+      }
+  * Place unsuccessful messages to the last on the allMessages
+
+## 1.2.5(Sept 21, 2020)
+
+- Features/Bugs:
+  * ChannelList
+    * disableUserProfile: boolean
+    * renderUserProfile: React.Component
+
+## 1.2.4(Sept 17, 2020) Deprecated
+
+- Features:
+  User profile viewer on Channel and ChannelSettings
+  Edit user profile on ChannelList(disabled by default)
+
+  * SendBirdProvider
+    * disableUserProfile: boolean
+    * renderUserProfile: React.Component
+    * allowProfileEdit: boolean
+  * Channel
+    * disableUserProfile: boolean
+    * renderUserProfile: React.Component
+  * ChannelSettings
+    * disableUserProfile: boolean
+    * renderUserProfile: React.Component
+  * ChannelList
+    * renderHeader(): React.Component
+    * allowProfileEdit: boolean
+    * onThemeChange(theme: string): void
+    * onProfileEditSuccess(user: User): void
+
+## 1.2.3(Sept 10, 2020)
+
+- Features:
+  * Message grouping
+
+- Bugfixes:
+  * Fix file upload issue with sendBirdSelectors.getSendFileMessage
+
+- Dependency updates:
+  * SDK version - 3.0.133
+
+## 1.2.2(Sept 10, 2020) Deprecated
+
+- Features:
+  * Message grouping
+
+- Bugfixes:
+  * Fix file upload issue with sendBirdSelectors.getSendFileMessage
+
+- Dependency updates:
+  * SDK version - 3.0.133
+
+## 1.2.1(Sept 01, 2020)
+
+- Bugfixes:
+  * Unordered message history
+  * Message text break on middle of word
+
+## 1.2.0(Aug 27, 2020)
+
+- Features:
+  * Add GroupChannel type selector UI to create channel
+  * Ability to create supergroup(to be enabled from dashboard)
+  * Channel creator will become operator user
+  * Channel moderation for operator user
+    * Mute user
+    * Ban user
+    * Promote/Demote other users to operator
+    * Freeze/Unfreeze Channels
+  * Visual indicators for different channel states in ChannelList
+  * Visual indicators for MessageInput based on channel state
+
+- Bugfixes:
+  * Remove multiple imports of font family
+  * Visual glitches
+
+- Dependency updates:
+  * SDK version - 3.0.132
+
+## 1.1.5(Aug 25, 2020)
+
+- Features:
+  * Edit sign on updated messages
+
+- Bugfixes:
+  * Race condition on Channel switch
+  * Visual glitches
+
+## 1.1.4(Aug 12, 2020)
+
+- Features:
+  * Implement OG tag messages
+  * Apply broadcast/Freeze indicators in Conversation
+
+- Bugfixes:
+  * Reload conversation and ChannelList on query change
+  * Change channel placeholder to match design
+  * Fix typing indicator bug
+
+- Dependency updates:
+  * SDK version - 3.0.129
+
+## 1.1.3(July 29, 2020)
+
+- Features:
+  * Visual indicator for frozen, broadcast channels
+
+- Bugfixes:
+  * Sort Channels in ChannelList by send message
+  * Update ChannelPreview on edit message
+  * Hide channel on onChannelHidden
+  * Other stability fixes
+
+## 1.1.2(July 14, 2020)
+
+- Features:
+  * Implement render messsage input and render chat header
+    * Channel.renderChatHeader({channel, user})
+    * Channel.renderMessageInput({channel, user, disabled})
+  * Rename messageListQuery to messageListParams
+
+- Bugfixes:
+  * Avatar size issue in ChannelList
+  * Various PropType warnings
+  * Other stability fixes
+
+## 1.1.1(July 10, 2020)
+
+- Features:
+  * Reactions
+    * Reactions are available for users who have it enabled
+    * getEmojiCategoriesFromEmojiContainer
+    * getAllEmojisFromEmojiContainer
+    * getEmojisFromEmojiContainer
+- Bugfixes:
+  * Avatar flickering issue
+  * SDK version mismatch issue
+  * Various stability fixes
+
+- Dependency updates:
+  * SDK version - 3.0.128
+
+## 1.1.0(July 10, 2020)(deprecated)
+
 ## 1.0.7(June 26, 2020)
 
 - Features:
