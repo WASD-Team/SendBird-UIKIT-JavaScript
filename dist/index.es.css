@@ -90,7 +90,8 @@
   --sendbird-button-border-focus: #FFFFFF;
   --sendbird-file-message-icon-background: #FFFFFF;
   --sendbird-font-family-default: 'Open Sans', sans-serif;
-  --sendbird-message-balloon-width: 404px; }
+  --sendbird-message-balloon-width: 404px;
+  --sendbird-embedd-balloon-width: 320px; }
 
 .sendbird__offline .sendbird-channel-preview {
   cursor: not-allowed; }
@@ -1798,8 +1799,8 @@
   .sendbird-thumbnail .sendbird-thumbnail__video,
   .sendbird-thumbnail .sendbird-thumbnail__img {
     display: block;
-    max-width: var(--sendbird-message-balloon-width);
-    max-height: 360px;
+    width: var(--sendbird-embedd-balloon-width);
+    padding-bottom: 69.3%;
     border-radius: 16px; }
 
 .sendbird-outgoing-thumbnail-message {
@@ -1871,8 +1872,8 @@
   .sendbird-outgoing-thumbnail-message .sendbird-outgoing-thumbnail-message-body__video,
   .sendbird-outgoing-thumbnail-message .sendbird-outgoing-thumbnail-message-body__img {
     display: block;
-    max-width: var(--sendbird-message-balloon-width);
-    max-height: 360px;
+    width: var(--sendbird-embedd-balloon-width);
+    padding-bottom: 69.3%;
     border-radius: 16px; }
   .sendbird-outgoing-thumbnail-message .sendbird-outgoing-thumbnail-message-body__video-icon {
     position: absolute;
@@ -1945,8 +1946,8 @@
   .sendbird-incoming-thumbnail-message .sendbird-incoming-thumbnail-message__video,
   .sendbird-incoming-thumbnail-message .sendbird-incoming-thumbnail-message__img {
     display: block;
-    max-width: var(--sendbird-message-balloon-width);
-    max-height: 360px;
+    width: var(--sendbird-embedd-balloon-width);
+    padding-bottom: 69.3%;
     border-radius: 16px; }
   .sendbird-incoming-thumbnail-message .sendbird-incoming-thumbnail-message__video-icon {
     position: absolute;

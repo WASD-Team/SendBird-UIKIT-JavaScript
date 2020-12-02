@@ -6622,7 +6622,11 @@ var SendingMessageStatus = {
 };
 var getMessageType = function getMessageType(message) {
   if (message.isUserMessage && message.isUserMessage() || message.messageType === 'user') {
-    return message.ogMetaData ? MessageTypes.OG : MessageTypes.USER;
+    // return (message.ogMetaData)
+    //   ? MessageTypes.OG
+    //   : MessageTypes.USER;
+    // Disable OG messages for now
+    return MessageTypes.USER;
   }
 
   if (message.isAdminMessage && message.isAdminMessage()) {
@@ -9201,8 +9205,6 @@ function OutgoingThumbnailMessage(_ref2) {
     className: "".concat(OUTGOING_THUMBNAIL_MESSAGE, "-body__img"),
     style: {
       backgroundImage: "url(".concat(url || localUrl, ")"),
-      height: '280px',
-      width: '404px',
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center'
@@ -9347,8 +9349,6 @@ function IncomingThumbnailMessage(_ref3) {
     className: "".concat(INCOMING_THUMBNAIL_MESSAGE, "__img"),
     style: {
       backgroundImage: "url(".concat(url || localUrl, ")"),
-      height: '280px',
-      width: '404px',
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center'
