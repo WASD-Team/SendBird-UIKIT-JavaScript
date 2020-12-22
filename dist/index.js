@@ -197,7 +197,6 @@ function _nonIterableRest() {
 }
 
 var SendbirdSdkContext = React__default.createContext();
-
 var withSendbirdContext = function withSendbirdContext(OriginalComponent, mapStoreToProps) {
   var ContextAwareComponent = function ContextAwareComponent(props) {
     return React__default.createElement(SendbirdSdkContext.Consumer, null, function (context) {
@@ -216,6 +215,16 @@ var withSendbirdContext = function withSendbirdContext(OriginalComponent, mapSto
   var componentName = OriginalComponent.displayName || OriginalComponent.name || 'Component';
   ContextAwareComponent.displayName = "SendbirdAware".concat(componentName);
   return ContextAwareComponent;
+};
+var useSendBirdContext = function useSendBirdContext(storeSelector) {
+  var context = React.useContext(SendbirdSdkContext);
+  return React.useMemo(function () {
+    if (!storeSelector) {
+      return context;
+    }
+
+    return storeSelector(context);
+  }, [context, storeSelector]);
 };
 
 var INIT_SDK = 'INIT_SDK';
@@ -560,7 +569,7 @@ var uuidv4 = function uuidv4() {
 };
 
 function useConnectionStatus(sdk, logger) {
-  var _useState = React.useState(true),
+  var _useState = React.useState(false),
       _useState2 = _slicedToArray(_useState, 2),
       isOnline = _useState2[0],
       setIsOnline = _useState2[1];
@@ -571,6 +580,7 @@ function useConnectionStatus(sdk, logger) {
     var handler;
 
     if (sdk && sdk.ConnectionHandler) {
+      setIsOnline(sdk.getConnectionState() !== sdk.ConnectionState.CLOSED);
       handler = new sdk.ConnectionHandler();
 
       handler.onReconnectStarted = function () {
@@ -7385,7 +7395,8 @@ function useInitialMessagesFetch(_ref, _ref2) {
 }
 
 function useHandleReconnect$1(_ref, _ref2) {
-  var isOnline = _ref.isOnline;
+  var isOnline = _ref.isOnline,
+      initialized = _ref.initialized;
   var logger = _ref2.logger,
       sdk = _ref2.sdk,
       currentGroupChannel = _ref2.currentGroupChannel,
@@ -7396,7 +7407,7 @@ function useHandleReconnect$1(_ref, _ref2) {
     var wasOffline = !isOnline;
     return function () {
       // state changed from offline to online
-      if (wasOffline) {
+      if (wasOffline && initialized) {
         logger.info('Refreshing conversation state');
         var _sdk$appInfo = sdk.appInfo,
             appInfo = _sdk$appInfo === void 0 ? {} : _sdk$appInfo;
@@ -7447,7 +7458,7 @@ function useHandleReconnect$1(_ref, _ref2) {
         });
       }
     };
-  }, [isOnline, currentGroupChannel]);
+  }, [isOnline, initialized, currentGroupChannel]);
 }
 
 function useScrollCallback(_ref, _ref2) {
@@ -12360,7 +12371,8 @@ var ConversationPanel = function ConversationPanel(props) {
   }); // handling connection breaks
 
   useHandleReconnect$1({
-    isOnline: isOnline
+    isOnline: isOnline,
+    initialized: initialized
   }, {
     logger: logger,
     sdk: sdk,
@@ -14930,5 +14942,6 @@ exports.getEmojiCategoriesFromEmojiContainer = getEmojiCategoriesFromEmojiContai
 exports.getEmojisFromEmojiContainer = getEmojisFromEmojiContainer$1;
 exports.getStringSet = getStringSet;
 exports.sendBirdSelectors = selectors;
+exports.useSendBird = useSendBirdContext;
 exports.withSendBird = withSendbirdContext;
 //# sourceMappingURL=index.js.map
