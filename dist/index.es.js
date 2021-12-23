@@ -8677,7 +8677,7 @@ function setupChannelList(_ref3) {
       if (channelList && typeof channelList.forEach === "function") {
         logger.info("ChannelList - mark all channels as delivered");
         channelList.forEach(function(c) {
-          return Sb.markAsDelivered(c.url);
+          return sdk.markAsDelivered(c.url);
         });
       }
     });
@@ -9104,7 +9104,7 @@ function ChannelList(props) {
               if (channelList && typeof channelList.forEach === "function") {
                 logger.info("ChannelList: Marking all channels as read");
                 channelList.forEach(function(c) {
-                  return Sb.markAsDelivered(c.url);
+                  return sdk.markAsDelivered(c.url);
                 });
               }
             });
