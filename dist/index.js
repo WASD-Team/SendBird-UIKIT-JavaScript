@@ -9488,13 +9488,14 @@ var getParsedStatus = function getParsedStatus(message, currentGroupChannel) {
       return MessageStatusType.SENT;
     }
 
-    var unreadCount = currentGroupChannel.getReadReceipt(message);
+    var unreadCount = currentGroupChannel.getUnreadMemberCount(message);
 
     if (unreadCount === 0) {
       return MessageStatusType.READ;
     }
 
-    var isDelivered = currentGroupChannel.getDeliveryReceipt(message) === 0;
+    var isDelivered =
+      currentGroupChannel.getUndeliveredMemberCount(message) === 0;
 
     if (isDelivered) {
       return MessageStatusType.DELIVERED;
@@ -10221,7 +10222,7 @@ function useInitialMessagesFetch(_ref, _ref2) {
         messageListParams.prevResultSize = 30;
         messageListParams.isInclusive = true;
         messageListParams.replyType = Sb.ReplyType.NONE;
-        messageListParams.includeReaction = true;
+        messageListParams.includeReactions = true;
 
         if (userFilledMessageListQuery) {
           Object.keys(userFilledMessageListQuery).forEach(function(key) {
@@ -10293,7 +10294,7 @@ function useHandleReconnect$1(_ref, _ref2) {
           var useReaction = appInfo.isUsingReaction || false;
           var messageListParams = new sdk.MessageListParams();
           messageListParams.replyType = Sb.ReplyType.NONE;
-          messageListParams.includeReaction = useReaction;
+          messageListParams.includeReactions = useReaction;
 
           if (userFilledMessageListQuery) {
             Object.keys(userFilledMessageListQuery).forEach(function(key) {
@@ -10370,7 +10371,7 @@ function useScrollCallback(_ref, _ref2) {
       var messageListParams = new sdk.MessageListParams();
       messageListParams.prevResultSize = 30;
       messageListParams.replyType = Sb.ReplyType.NONE;
-      messageListParams.includeReaction = true;
+      messageListParams.includeReactions = true;
 
       if (userFilledMessageListQuery) {
         Object.keys(userFilledMessageListQuery).forEach(function(key) {
@@ -17441,7 +17442,7 @@ ConversationPanel.propTypes = {
     messageListParams: PropTypes.shape({
       includeMetaArray: PropTypes.bool,
       includeParentMessageInfo: PropTypes.bool,
-      includeReaction: PropTypes.bool,
+      includeReactions: PropTypes.bool,
       replyType: Sb.ReplyType,
       includeThreadInfo: PropTypes.bool,
       limit: PropTypes.number,
