@@ -10211,7 +10211,7 @@ function useInitialMessagesFetch(_ref, _ref2) {
         var messageListParams = new sdk.MessageListParams();
         messageListParams.prevResultSize = 30;
         messageListParams.isInclusive = true;
-        messageListParams.replyType = Sb.ReplyType.NONE;
+        messageListParams.replyType = sdk.MessageListParams.ReplyType.NONE;
         messageListParams.includeReactions = true;
 
         if (userFilledMessageListQuery) {
@@ -10283,7 +10283,7 @@ function useHandleReconnect$1(_ref, _ref2) {
             appInfo = _sdk$appInfo === void 0 ? {} : _sdk$appInfo;
           var useReaction = appInfo.isUsingReaction || false;
           var messageListParams = new sdk.MessageListParams();
-          messageListParams.replyType = Sb.ReplyType.NONE;
+          messageListParams.replyType = sdk.MessageListParams.ReplyType.NONE;
           messageListParams.includeReactions = useReaction;
 
           if (userFilledMessageListQuery) {
@@ -10360,7 +10360,7 @@ function useScrollCallback(_ref, _ref2) {
 
       var messageListParams = new sdk.MessageListParams();
       messageListParams.prevResultSize = 30;
-      messageListParams.replyType = Sb.ReplyType.NONE;
+      messageListParams.replyType = sdk.MessageListParams.ReplyType.NONE;
       messageListParams.includeReactions = true;
 
       if (userFilledMessageListQuery) {
