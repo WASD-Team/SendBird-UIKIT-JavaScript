@@ -123,7 +123,7 @@ interface MessageListParams {
   isInclusive?: boolean;
   shouldReverse?: boolean;
   messageType?: string;
-  customType?: string;
+  customTypes?: [string];
   senderUserIds?: [string];
   includeMetaArray?: boolean;
   includeReactions?: boolean;
