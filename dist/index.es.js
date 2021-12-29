@@ -10155,6 +10155,7 @@ function useSetChannel(_ref, _ref2) {
             });
 
             groupChannel.markAsRead().then(function(groupChannel) {
+              console.log("useSetChannel");
               logger.info("Channel: Mark as read", groupChannel); // this order is important - this mark as read should update the event handler up above
             });
           })
@@ -10254,6 +10255,7 @@ function useInitialMessagesFetch(_ref, _ref2) {
           })
           .finally(function() {
             currentGroupChannel.markAsRead().then(function() {
+              console.log("useInitialMessagesFetch");
               return scrollToBottom();
             });
           });
@@ -10334,7 +10336,9 @@ function useHandleReconnect$1(_ref, _ref2) {
                 logger.error("Channel: Fetching messages failed", error);
               })
               .finally(function() {
-                currentGroupChannel.markAsRead();
+                currentGroupChannel.markAsRead().then(function() {
+                  console.log("useHandleReconnect$1");
+                });
               });
           });
         }
@@ -10406,7 +10410,9 @@ function useScrollCallback(_ref, _ref2) {
           cb([null, error]);
         })
         .finally(function() {
-          currentGroupChannel.markAsRead();
+          currentGroupChannel.markAsRead().then(function() {
+            console.log("useScrollCallback");
+          });
         });
     },
     [currentGroupChannel, lastMessageTimeStamp]
@@ -16235,7 +16241,9 @@ var ConversationScroll =
             messagesDispatcher({
               type: MARK_AS_READ
             });
-            currentGroupChannel.markAsRead();
+            currentGroupChannel.markAsRead().then(function() {
+              console.log("useScrollCallback");
+            });
           }
         }, 500);
       });
@@ -17145,6 +17153,7 @@ var ConversationPanel = function ConversationPanel(props) {
       if (scrollBottom > prevElementTop) {
         scrollToBottom();
         currentGroupChannel.markAsRead().then(function() {
+          console.log("useEffect");
           messagesDispatcher({
             type: MARK_AS_READ
           });
@@ -17319,6 +17328,7 @@ var ConversationPanel = function ConversationPanel(props) {
 
           if (scrollRef.current.scrollTop === 0) {
             currentGroupChannel.markAsRead().then(function() {
+              console.log("createElement(Notification");
               messagesDispatcher({
                 type: MARK_AS_READ
               });
