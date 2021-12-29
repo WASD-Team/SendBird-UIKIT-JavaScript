@@ -10163,9 +10163,10 @@ function useSetChannel(_ref, _ref2) {
               type: SET_CURRENT_CHANNEL$1,
               payload: groupChannel
             });
-            logger.info("Channel: Mark as read", groupChannel); // this order is important - this mark as read should update the event handler up above
 
-            groupChannel.markAsRead();
+            groupChannel.markAsRead().then(function(groupChannel) {
+              logger.info("Channel: Mark as read", groupChannel); // this order is important - this mark as read should update the event handler up above
+            });
           })
           .catch(function(e) {
             logger.warning("Channel | useSetChannel fetch channel failed", {
@@ -10262,8 +10263,7 @@ function useInitialMessagesFetch(_ref, _ref2) {
             });
           })
           .finally(function() {
-            currentGroupChannel.markAsRead();
-            setTimeout(function() {
+            currentGroupChannel.markAsRead().then(function() {
               return scrollToBottom();
             });
           });
@@ -16242,10 +16242,11 @@ var ConversationScroll =
         setTimeout(function() {
           // mark as read if scroll is at end
           if (clientHeight + scrollTop === scrollHeight) {
-            messagesDispatcher({
-              type: MARK_AS_READ
+            currentGroupChannel.markAsRead().then(function() {
+              messagesDispatcher({
+                type: MARK_AS_READ
+              });
             });
-            currentGroupChannel.markAsRead();
           }
         }, 500);
       });
@@ -17154,9 +17155,10 @@ var ConversationPanel = function ConversationPanel(props) {
 
       if (scrollBottom > prevElementTop) {
         scrollToBottom();
-        currentGroupChannel.markAsRead();
-        messagesDispatcher({
-          type: MARK_AS_READ
+        currentGroupChannel.markAsRead().then(function() {
+          messagesDispatcher({
+            type: MARK_AS_READ
+          });
         });
       }
     },
@@ -17327,9 +17329,10 @@ var ConversationPanel = function ConversationPanel(props) {
           scrollToBottom(); // there is no scroll
 
           if (scrollRef.current.scrollTop === 0) {
-            currentGroupChannel.markAsRead();
-            messagesDispatcher({
-              type: MARK_AS_READ
+            currentGroupChannel.markAsRead().then(function() {
+              messagesDispatcher({
+                type: MARK_AS_READ
+              });
             });
           }
         },

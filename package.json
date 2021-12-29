@@ -93,6 +93,6 @@
   "dependencies": {
     "css-vars-ponyfill": "^2.3.2",
     "date-fns": "^2.16.1",
-    "sendbird": "^3.0.133"
+    "sendbird": "^3.1.6"
   }
 }
