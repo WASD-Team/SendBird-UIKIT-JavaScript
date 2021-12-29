@@ -10154,8 +10154,8 @@ function useSetChannel(_ref, _ref2) {
               payload: groupChannel
             });
 
+            console.log("useSetChannel");
             groupChannel.markAsRead().then(function(groupChannel) {
-              console.log("useSetChannel");
               logger.info("Channel: Mark as read", groupChannel); // this order is important - this mark as read should update the event handler up above
             });
           })
@@ -10254,8 +10254,8 @@ function useInitialMessagesFetch(_ref, _ref2) {
             });
           })
           .finally(function() {
+            console.log("useInitialMessagesFetch");
             currentGroupChannel.markAsRead().then(function() {
-              console.log("useInitialMessagesFetch");
               return scrollToBottom();
             });
           });
@@ -10336,9 +10336,8 @@ function useHandleReconnect$1(_ref, _ref2) {
                 logger.error("Channel: Fetching messages failed", error);
               })
               .finally(function() {
-                currentGroupChannel.markAsRead().then(function() {
-                  console.log("useHandleReconnect$1");
-                });
+                console.log("useHandleReconnect$1");
+                currentGroupChannel.markAsRead().then(function() {});
               });
           });
         }
@@ -10410,9 +10409,8 @@ function useScrollCallback(_ref, _ref2) {
           cb([null, error]);
         })
         .finally(function() {
-          currentGroupChannel.markAsRead().then(function() {
-            console.log("useScrollCallback");
-          });
+          console.log("useScrollCallback");
+          currentGroupChannel.markAsRead().then(function() {});
         });
     },
     [currentGroupChannel, lastMessageTimeStamp]
@@ -16241,9 +16239,8 @@ var ConversationScroll =
             messagesDispatcher({
               type: MARK_AS_READ
             });
-            currentGroupChannel.markAsRead().then(function() {
-              console.log("useScrollCallback");
-            });
+            console.log("useScrollCallback");
+            currentGroupChannel.markAsRead().then(function() {});
           }
         }, 500);
       });
@@ -17152,8 +17149,9 @@ var ConversationPanel = function ConversationPanel(props) {
 
       if (scrollBottom > prevElementTop) {
         scrollToBottom();
+        console.log("useEffect");
+
         currentGroupChannel.markAsRead().then(function() {
-          console.log("useEffect");
           messagesDispatcher({
             type: MARK_AS_READ
           });
@@ -17327,8 +17325,8 @@ var ConversationPanel = function ConversationPanel(props) {
           scrollToBottom(); // there is no scroll
 
           if (scrollRef.current.scrollTop === 0) {
+            console.log("createElement(Notification");
             currentGroupChannel.markAsRead().then(function() {
-              console.log("createElement(Notification");
               messagesDispatcher({
                 type: MARK_AS_READ
               });
