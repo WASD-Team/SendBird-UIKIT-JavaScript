@@ -17146,17 +17146,21 @@ var ConversationPanel = function ConversationPanel(props) {
       var scrollBottom = scrollElement.scrollTop + scrollElement.clientHeight;
       var prevElementTop =
         prevMessageElement.offsetTop - prevMessageElement.clientHeight;
-      //
-      // if (scrollBottom > prevElementTop) {
-      //   scrollToBottom();
-      //   console.log("useEffect");
-      //
-      //   currentGroupChannel.markAsRead().then(function() {
-      //     messagesDispatcher({
-      //       type: MARK_AS_READ
-      //     });
-      //   });
-      // }
+
+      if (scrollBottom > prevElementTop) {
+        console.log("scrollBottom" + scrollBottom);
+        console.log("prevElementTop" + prevElementTop);
+        console.log(scrollElement);
+        console.log(prevMessageElement);
+        //   scrollToBottom();
+        //   console.log("useEffect");
+        //
+        //   currentGroupChannel.markAsRead().then(function() {
+        //     messagesDispatcher({
+        //       type: MARK_AS_READ
+        //     });
+        //   });
+      }
     },
     [allMessages, scrollToBottom]
   );
