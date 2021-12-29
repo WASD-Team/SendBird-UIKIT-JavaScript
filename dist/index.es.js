@@ -17121,6 +17121,9 @@ var ConversationPanel = function ConversationPanel(props) {
       scrollToBottom: scrollToBottom
     }
   );
+
+  const didMount = useRef(false);
+
   useEffect(
     function() {
       var scrollElement = scrollRef.current;
@@ -17147,19 +17150,23 @@ var ConversationPanel = function ConversationPanel(props) {
       var prevElementTop =
         prevMessageElement.offsetTop - prevMessageElement.clientHeight;
 
-      if (scrollBottom > prevElementTop) {
-        console.log("scrollBottom" + scrollBottom);
-        console.log("prevElementTop" + prevElementTop);
-        console.log(scrollElement);
-        console.log(prevMessageElement);
-        //   scrollToBottom();
-        //   console.log("useEffect");
-        //
-        //   currentGroupChannel.markAsRead().then(function() {
-        //     messagesDispatcher({
-        //       type: MARK_AS_READ
-        //     });
-        //   });
+      if (didMount.current) {
+        if (scrollBottom > prevElementTop) {
+          console.log("scrollBottom" + scrollBottom);
+          console.log("prevElementTop" + prevElementTop);
+          console.log(scrollElement);
+          console.log(prevMessageElement);
+          scrollToBottom();
+          console.log("useEffect");
+
+          currentGroupChannel.markAsRead().then(function() {
+            messagesDispatcher({
+              type: MARK_AS_READ
+            });
+          });
+        }
+      } else {
+        didMount.current = true;
       }
     },
     [allMessages, scrollToBottom]
