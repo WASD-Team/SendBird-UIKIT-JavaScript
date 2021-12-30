@@ -16233,16 +16233,16 @@ var ConversationScroll =
           });
         }
 
-        setTimeout(function() {
-          // mark as read if scroll is at end
-          if (clientHeight + scrollTop === scrollHeight) {
-            messagesDispatcher({
-              type: MARK_AS_READ
-            });
-            console.log("useScrollCallback");
-            currentGroupChannel.markAsRead().then(function() {});
-          }
-        }, 500);
+        // setTimeout(function() {
+        //   // mark as read if scroll is at end
+        //   if (clientHeight + scrollTop === scrollHeight) {
+        //     messagesDispatcher({
+        //       type: MARK_AS_READ
+        //     });
+        //     console.log("ConversationScroll");
+        //     currentGroupChannel.markAsRead().then(function() {});
+        //   }
+        // }, 500);
       });
 
       return _this;
@@ -17152,12 +17152,7 @@ var ConversationPanel = function ConversationPanel(props) {
 
       if (didMount.current) {
         if (scrollBottom > prevElementTop) {
-          console.log("scrollBottom" + scrollBottom);
-          console.log("prevElementTop" + prevElementTop);
-          console.log(scrollElement);
-          console.log(prevMessageElement);
           scrollToBottom();
-          console.log("useEffect");
 
           currentGroupChannel.markAsRead().then(function() {
             messagesDispatcher({
