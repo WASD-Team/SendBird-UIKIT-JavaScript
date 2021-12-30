@@ -10338,6 +10338,7 @@ function useHandleReconnect$1(_ref, _ref2) {
               .finally(function() {
                 console.log("useHandleReconnect$1");
                 // currentGroupChannel.markAsRead().then(function() {});
+              });
           });
         }
       };
