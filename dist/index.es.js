@@ -13916,6 +13916,10 @@ var MessageInput = React.forwardRef(function(props, ref) {
     var elem = ref.current;
     var MAX_HEIGHT = window.document.body.offsetHeight * 0.6;
 
+    if (!elem) {
+      return null;
+    }
+
     if (elem.scrollHeight >= LINE_HEIGHT) {
       if (MAX_HEIGHT < elem.scrollHeight) {
         elem.style.height = "auto";
